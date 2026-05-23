@@ -16,6 +16,7 @@ import {
   Inbox,
   Trash2,
   Lock,
+  CheckCircle,
 } from "lucide-react";
 
 interface PlannerTask {
@@ -27,6 +28,11 @@ interface PlannerTask {
   date: string; // YYYY-MM-DD
 }
 
+interface BigTask {
+  text: string;
+  completed: boolean;
+}
+
 export default function PlannerPage() {
   const [viewMode, setViewMode] = useState<"day" | "week" | "month">("day");
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
@@ -34,6 +40,11 @@ export default function PlannerPage() {
   const [newTaskText, setNewTaskText] = useState("");
   const [selectedTimeSlot, setSelectedTimeSlot] = useState("09:00 AM");
   const [selectedPriority, setSelectedPriority] = useState<"High" | "Medium" | "Low">("Medium");
+
+  // Big 3 priorities list state
+  const [big3, setBig3] = useState<BigTask[]>([]);
+  const [editingBig3Index, setEditingBig3Index] = useState<number | null>(null);
+  const [editingBig3Text, setEditingBig3Text] = useState("");
 
   // Load / Save Local Storage
   useEffect(() => {
@@ -56,12 +67,35 @@ export default function PlannerPage() {
         setTasks(defaultTasks);
         localStorage.setItem("spacenos_planner_tasks", JSON.stringify(defaultTasks));
       }
+
+      // Load Big 3 priorities
+      const storedBig3 = localStorage.getItem("spacenos_big_3");
+      if (storedBig3) {
+        try {
+          setBig3(JSON.parse(storedBig3));
+        } catch (e) {
+          console.error(e);
+        }
+      } else {
+        const defaultBig3 = [
+          { text: "Complete routing configurations inside Route Groups", completed: false },
+          { text: "Structure gorgeous custom UI layouts using Lexend", completed: false },
+          { text: "", completed: false }
+        ];
+        setBig3(defaultBig3);
+        localStorage.setItem("spacenos_big_3", JSON.stringify(defaultBig3));
+      }
     }
   }, []);
 
   const saveTasks = (newTasks: PlannerTask[]) => {
     setTasks(newTasks);
     localStorage.setItem("spacenos_planner_tasks", JSON.stringify(newTasks));
+  };
+
+  const saveBig3 = (newBig3: BigTask[]) => {
+    setBig3(newBig3);
+    localStorage.setItem("spacenos_big_3", JSON.stringify(newBig3));
   };
 
   const getTodayStr = (date: Date) => {
@@ -230,70 +264,200 @@ export default function PlannerPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="bg-white border border-[rgba(0,0,0,0.06)] rounded-2xl p-6 shadow-xs space-y-4"
+                className="bg-white border border-[rgba(0,0,0,0.06)] rounded-2xl p-6 shadow-xs space-y-6"
               >
-                <h3 className="font-display text-lg font-semibold text-black border-b border-[rgba(0,0,0,0.06)] pb-3">
+                {/* Big 3 Priorities Block */}
+                <div className="pb-6 border-b border-[rgba(0,0,0,0.06)]">
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="text-[10px] font-bold text-[#6B6B6B] uppercase tracking-wider shrink-0 select-none">
+                      Big 3 Priorities
+                    </span>
+                    <div className="flex-1 h-px bg-[rgba(0,0,0,0.06)]" />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[0, 1, 2].map((i) => {
+                      const task = big3[i];
+                      const isEditing = editingBig3Index === i;
+
+                      if (isEditing) {
+                        return (
+                          <div
+                            key={i}
+                            className="flex flex-col items-center justify-center p-3.5 rounded-2xl border-2 border-dashed border-[#E14C2A] bg-[#FCEBE6]/10 min-h-[95px]"
+                          >
+                            <form
+                              onSubmit={(e) => {
+                                e.preventDefault();
+                                if (editingBig3Text.trim()) {
+                                  const updated = [...big3];
+                                  while (updated.length <= i) {
+                                    updated.push({ text: "", completed: false });
+                                  }
+                                  updated[i] = { text: editingBig3Text.trim(), completed: false };
+                                  saveBig3(updated);
+                                }
+                                setEditingBig3Index(null);
+                                setEditingBig3Text("");
+                              }}
+                              className="w-full space-y-2"
+                            >
+                              <input
+                                type="text"
+                                autoFocus
+                                value={editingBig3Text}
+                                onChange={(e) => setEditingBig3Text(e.target.value)}
+                                placeholder="Core goal..."
+                                className="w-full text-center text-[10px] p-2 rounded-lg bg-white border border-[rgba(0,0,0,0.06)] focus:outline-none focus:ring-1 focus:ring-primary font-semibold text-black"
+                              />
+                              <div className="flex justify-center gap-1.5">
+                                <button
+                                  type="submit"
+                                  className="bg-[#E14C2A] text-white text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingBig3Index(null);
+                                    setEditingBig3Text("");
+                                  }}
+                                  className="bg-slate-200 text-[#6B6B6B] text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </form>
+                          </div>
+                        );
+                      }
+
+                      if (task && task.text) {
+                        return (
+                          <div
+                            key={i}
+                            className="flex flex-col justify-between p-3.5 rounded-2xl border-2 border-[#E14C2A]/20 bg-[#FCEBE6]/10 min-h-[95px] transition-all relative group"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <span className="text-[10px] font-semibold text-black leading-relaxed font-sans">
+                                {task.text}
+                              </span>
+                              <button
+                                onClick={() => {
+                                  const updated = [...big3];
+                                  updated[i].completed = !updated[i].completed;
+                                  saveBig3(updated);
+                                }}
+                                className="shrink-0 pt-0.5"
+                              >
+                                {task.completed ? (
+                                  <CheckCircle className="w-4 h-4 text-[#E14C2A] fill-[#E14C2A]/10" />
+                                ) : (
+                                  <div className="w-4 h-4 rounded-full border border-[rgba(0,0,0,0.15)] hover:border-primary" />
+                                )}
+                              </button>
+                            </div>
+
+                            <div className="flex justify-between items-center mt-2 pt-2 border-t border-[rgba(0,0,0,0.03)]">
+                              <span className={`text-[8px] font-bold uppercase tracking-wider ${
+                                task.completed ? "text-[#6B6B6B]" : "text-primary"
+                              }`}>
+                                {task.completed ? "Done" : "In Focus"}
+                              </span>
+                              <button
+                                onClick={() => {
+                                  const updated = [...big3];
+                                  updated[i] = { text: "", completed: false };
+                                  saveBig3(updated);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 text-[8px] font-bold text-red-500 hover:underline transition-opacity"
+                              >
+                                Clear
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div
+                          key={i}
+                          onClick={() => {
+                            setEditingBig3Index(i);
+                            setEditingBig3Text("");
+                          }}
+                          className="flex flex-col items-center justify-center p-3.5 rounded-2xl border-2 border-dashed border-[rgba(0,0,0,0.08)] bg-[#ECE7E0]/10 hover:border-[#E14C2A]/30 hover:bg-[#FCEBE6]/10 cursor-pointer min-h-[95px] transition-all group"
+                        >
+                          <Plus className="w-4.5 h-4.5 text-[#6B6B6B] opacity-50 group-hover:text-[#E14C2A] group-hover:opacity-100 mb-1 transition-all" />
+                          <span className="text-[8px] font-black text-[#6B6B6B] opacity-60 tracking-widest group-hover:text-[#E14C2A] group-hover:opacity-100 transition-all uppercase">
+                            Slot Open
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <h3 className="font-display text-lg font-semibold text-black border-b border-[rgba(0,0,0,0.06)] pb-3 pt-2">
                   Day Schedule Timeline
                 </h3>
 
                 <div className="space-y-4">
-                  {timeSlots.map((slot) => {
-                    const slotTasks = todayTasks.filter((t) => t.timeSlot === slot);
-                    return (
-                      <div key={slot} className="flex gap-4 items-start group">
-                        <span className="text-[10px] font-bold text-[#6B6B6B] w-16 pt-2 select-none">
-                          {slot}
-                        </span>
-                        
-                        <div className="flex-1 min-h-[3.5rem] border-l border-[rgba(0,0,0,0.06)] pl-4 space-y-2">
-                          {slotTasks.map((task) => (
-                            <div
-                              key={task.id}
-                              className={`p-3 rounded-lg border-2 text-xs flex items-center justify-between group/task transition-all ${
-                                task.completed
-                                  ? "bg-surface-container-low border-on-surface/5 opacity-70"
-                                  : task.priority === "High"
-                                  ? "bg-[#FCEBE6] border-[#E14C2A] text-black"
-                                  : "bg-white border-[rgba(0,0,0,0.06)] text-black"
-                              }`}
-                            >
-                              <div className="flex items-center gap-3">
-                                <button
-                                  onClick={() => toggleTask(task.id)}
-                                  className="w-4 h-4 rounded-full border border-primary flex items-center justify-center bg-white shadow-xs shrink-0"
+                  {todayTasks.filter((t) => t.timeSlot).length > 0 ? (
+                    timeSlots
+                      .filter((slot) => todayTasks.some((t) => t.timeSlot === slot))
+                      .map((slot) => {
+                        const slotTasks = todayTasks.filter((t) => t.timeSlot === slot);
+                        return (
+                          <div key={slot} className="flex gap-4 items-start group">
+                            <span className="text-[10px] font-bold text-[#6B6B6B] w-16 pt-2 select-none">
+                              {slot}
+                            </span>
+                            
+                            <div className="flex-1 min-h-[3.5rem] border-l border-[rgba(0,0,0,0.06)] pl-4 space-y-2">
+                              {slotTasks.map((task) => (
+                                <div
+                                  key={task.id}
+                                  className={`p-3 rounded-lg border-2 text-xs flex items-center justify-between group/task transition-all ${
+                                    task.completed
+                                      ? "bg-surface-container-low border-on-surface/5 opacity-70"
+                                      : task.priority === "High"
+                                      ? "bg-[#FCEBE6] border-[#E14C2A] text-black"
+                                      : "bg-white border-[rgba(0,0,0,0.06)] text-black"
+                                  }`}
                                 >
-                                  {task.completed && <Check className="w-2.5 h-2.5 text-primary" />}
-                                </button>
-                                <span className={task.completed ? "line-through text-[#6B6B6B]" : "font-semibold"}>
-                                  {task.text}
-                                </span>
-                              </div>
+                                  <div className="flex items-center gap-3">
+                                    <button
+                                      onClick={() => toggleTask(task.id)}
+                                      className="w-4 h-4 rounded-full border border-primary flex items-center justify-center bg-white shadow-xs shrink-0"
+                                    >
+                                      {task.completed && <Check className="w-2.5 h-2.5 text-primary" />}
+                                    </button>
+                                    <span className={task.completed ? "line-through text-[#6B6B6B]" : "font-semibold"}>
+                                      {task.text}
+                                    </span>
+                                  </div>
 
-                              <button
-                                onClick={() => deleteTask(task.id)}
-                                className="opacity-0 group-hover/task:opacity-100 p-1 text-[#6B6B6B] hover:text-primary transition-opacity"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
+                                  <button
+                                    onClick={() => deleteTask(task.id)}
+                                    className="opacity-0 group-hover/task:opacity-100 p-1 text-[#6B6B6B] hover:text-primary transition-opacity"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              ))}
                             </div>
-                          ))}
-
-                          {slotTasks.length === 0 && (
-                            <button
-                              onClick={() => {
-                                setSelectedTimeSlot(slot);
-                                const el = document.getElementById("planner-input-focus");
-                                if (el) el.focus();
-                              }}
-                              className="text-[10px] text-[#6B6B6B] hover:text-[#E14C2A] font-semibold opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 py-1"
-                            >
-                              <Plus className="w-3 h-3" /> Block time slot
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+                          </div>
+                        );
+                      })
+                  ) : (
+                    <div className="text-center py-8 border border-dashed border-[rgba(0,0,0,0.08)] rounded-xl bg-[#FCFAF8] p-6">
+                      <Clock className="w-8 h-8 text-[#6B6B6B] opacity-35 mx-auto mb-2" />
+                      <p className="text-xs text-[#6B6B6B] italic font-semibold">No active time blocks scheduled for today.</p>
+                      <p className="text-[10px] text-[#6B6B6B]/80 mt-1">Use the "Add Planner Target" widget on the right to block out your calendar.</p>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -310,7 +474,7 @@ export default function PlannerPage() {
                   Weekly Board
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+                <div className="flex gap-3.5 overflow-x-auto pb-4 scrollbar-thin select-none">
                   {getWeekDates().map((d, index) => {
                     const dStr = getTodayStr(d);
                     const isToday = dStr === getTodayStr(new Date());
@@ -319,7 +483,7 @@ export default function PlannerPage() {
                     return (
                       <div
                         key={index}
-                        className={`flex flex-col rounded-xl border p-3 min-h-[220px] transition-colors ${
+                        className={`flex flex-col rounded-xl border p-3.5 min-h-[280px] min-w-[140px] flex-1 transition-colors ${
                           isToday
                             ? "bg-[#FCEBE6]/30 border-[#E14C2A] shadow-xs"
                             : "bg-surface-container-lowest border-[rgba(0,0,0,0.06)]"
@@ -339,10 +503,10 @@ export default function PlannerPage() {
                             <div
                               key={task.id}
                               onClick={() => toggleTask(task.id)}
-                              className={`p-2 rounded-lg border text-[10px] leading-tight cursor-pointer transition-all ${
+                              className={`p-2.5 rounded-lg border text-[10px] leading-relaxed cursor-pointer transition-all ${
                                 task.completed
                                   ? "bg-surface-container-low border-on-surface/5 opacity-60 line-through text-[#6B6B6B]"
-                                  : "bg-white border-[rgba(0,0,0,0.06)] hover:border-primary font-medium"
+                                  : "bg-white border-[rgba(0,0,0,0.06)] hover:border-primary font-semibold text-black"
                               }`}
                             >
                               {task.text}
@@ -356,7 +520,7 @@ export default function PlannerPage() {
                             const el = document.getElementById("planner-input-focus");
                             if (el) el.focus();
                           }}
-                          className="mt-2 text-[8px] text-[#6B6B6B] hover:text-[#E14C2A] font-bold uppercase tracking-wider flex items-center gap-1"
+                          className="mt-3 text-[8px] text-[#6B6B6B] hover:text-[#E14C2A] font-bold uppercase tracking-wider flex items-center gap-1 pt-2 border-t border-[rgba(0,0,0,0.03)]"
                         >
                           <Plus className="w-2.5 h-2.5" /> Add Target
                         </button>
