@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -338,10 +339,10 @@ export default function App() {
             transition={{ duration: 0.6 }}
           >
             <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-on-surface tracking-tight leading-tight mb-6">
-              Your brain deserves a softer system.
+              Stop managing tasks. <br /> Start <span className="text-primary">doing them.</span>
             </h1>
             <p className="text-base sm:text-lg text-on-surface-variant font-medium leading-relaxed mb-8 max-w-2xl mx-auto">
-              SPACENOS helps you capture thoughts, focus on only a few priorities, and reduce mental overload with a calm ADHD-friendly workflow.
+              You open your task app. You see <span className="text-primary">47 things</span>. You close it. Nothing gets done. <span className="text-primary">There's a better way.</span>
             </p>
             
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
