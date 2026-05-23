@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Leaf,
@@ -35,7 +36,8 @@ interface Task {
   completed: boolean;
 }
 
-export default function App() {
+export default function LandingPage() {
+  const router = useRouter();
 
   // Audio Engine Focus State
   const [isPlayingNoise, setIsPlayingNoise] = useState<boolean>(false);
@@ -98,7 +100,6 @@ export default function App() {
   // Sound generator toggle (Web Audio API)
   const toggleFocusSound = () => {
     if (isPlayingNoise) {
-      // Stop the audio
       if (sourceNodeRef.current) {
         try {
           sourceNodeRef.current.stop();
@@ -113,7 +114,6 @@ export default function App() {
       setIsPlayingNoise(false);
       showToast("Atmospheric brown noise paused. Return anytime.");
     } else {
-      // Start pure synthetic cozy ambient brown noise (rain atmospheric rhythm)
       try {
         const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
         const ctx = new AudioContextClass();
@@ -126,23 +126,21 @@ export default function App() {
         let lastOut = 0.0;
         for (let i = 0; i < bufferSize; i++) {
           const white = Math.random() * 2 - 1;
-          // Brownian focus filter approximation (attenuates high frequencies beautifully)
           output[i] = (lastOut + 0.02 * white) / 1.02;
           lastOut = output[i];
-          output[i] *= 3.5; // Gain factor
+          output[i] *= 3.5;
         }
 
         const source = ctx.createBufferSource();
         source.buffer = noiseBuffer;
         source.loop = true;
 
-        // Custom filter representing cozy rain
         const filter = ctx.createBiquadFilter();
         filter.type = "lowpass";
-        filter.frequency.value = 320; // Deep satisfying brown rumble
+        filter.frequency.value = 320;
 
         const gainNode = ctx.createGain();
-        gainNode.gain.value = 0.16; // Perfectly comfortable focus background volume
+        gainNode.gain.value = 0.16;
 
         source.connect(filter);
         filter.connect(gainNode);
@@ -153,13 +151,11 @@ export default function App() {
         setIsPlayingNoise(true);
         showToast("Cozy Brownian focus frequency active. Enjoy your sensory sanctuary!");
       } catch (err) {
-        console.error("Web Audio not supported on this browser context:", err);
+        console.error("Web Audio not supported:", err);
         showToast("Audio synthesis is restricted inside this viewport or browser.");
       }
     }
   };
-
-
 
   // Tasks progress calculated
   const completedCount = focusTasks.filter(t => t.completed).length;
@@ -202,7 +198,7 @@ export default function App() {
     }
   };
 
-  // Reset Sandbox inputs
+  // Save targets and go to app
   const saveUserSandbox = (e: React.FormEvent) => {
     e.preventDefault();
     const cleanTasks = userTasks.map(t => t.trim()).filter(Boolean);
@@ -213,10 +209,9 @@ export default function App() {
     localStorage.setItem("spacenos_user_tasks", JSON.stringify(userTasks));
     setSavedWorkspace(true);
     setIsModalOpen(false);
-    showToast("Your 3 Golden Targets have been persisted! Let's conquer the day.");
+    router.push("/planner");
   };
 
-  // Dynamic Lucide selection based on categories
   const getCategoryIcon = (category: string) => {
     const cat = category.toLowerCase();
     if (cat.includes("mail") || cat.includes("email") || cat.includes("sarah")) {
@@ -235,7 +230,7 @@ export default function App() {
   };
 
   return (
-    <div className="dot-grid min-h-screen text-on-surface antialiased selection:bg-secondary-container relative pb-16">
+    <div className="dot-grid min-h-screen text-[#1F1F1F] antialiased selection:bg-secondary-container relative pb-16">
       
       {/* Toast Alert System */}
       <AnimatePresence>
@@ -255,19 +250,17 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Floating ADHD Helper Accessories Bar */}
+      {/* Floating Focus Audio Dock */}
       <div className="fixed bottom-4 left-4 z-40 flex items-center gap-2 bg-white/95 max-w-xs px-3 py-2 rounded-xl shadow-lg border border-on-surface/10 backdrop-blur-md">
         <span className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1">
           <Activity className="w-3.5 h-3.5 shrink-0 text-primary" /> Focus Audio:
         </span>
-
-        {/* Ambient Synthesizer Rain */}
         <button
           onClick={toggleFocusSound}
           className={`p-1.5 rounded-full transition-all flex items-center justify-center ${
             isPlayingNoise ? "bg-primary text-white animate-pulse" : "bg-surface-container hover:bg-surface-container-high text-on-surface"
           }`}
-          title="Play Brownian Atmospheric White Noise (Rain rumble) to shield distractions"
+          title="Play Brownian White Noise"
         >
           {isPlayingNoise ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
         </button>
@@ -288,29 +281,26 @@ export default function App() {
             <a href="#features" className="text-primary font-bold border-b-2 border-primary pb-1 font-sans text-xs tracking-wide transition-colors">
               Features
             </a>
-            <a href="#built-for-adhd" className="text-on-surface font-semibold font-sans text-xs tracking-wide hover:text-primary transition-colors">
+            <a href="#built-for-adhd" className="text-[#1F1F1F] font-semibold font-sans text-xs tracking-wide hover:text-primary transition-colors">
               How It Works
             </a>
-            <a href="#scratchpad" className="text-on-surface font-semibold font-sans text-xs tracking-wide hover:text-primary transition-colors">
+            <a href="#scratchpad" className="text-[#1F1F1F] font-semibold font-sans text-xs tracking-wide hover:text-primary transition-colors">
               ADHD-Friendly
             </a>
-            <a href="#pricing" className="text-on-surface font-semibold font-sans text-xs tracking-wide hover:text-primary transition-colors">
+            <a href="#pricing" className="text-[#1F1F1F] font-semibold font-sans text-xs tracking-wide hover:text-primary transition-colors">
               Pricing
             </a>
           </div>
 
           <div className="flex items-center gap-4">
             <button
-              onClick={() => showToast("Sign In modal: Spacenos cloud-sync begins after account links.")}
-              className="text-on-surface text-xs font-semibold hover:text-primary transition-colors"
+              onClick={() => router.push("/planner")}
+              className="text-[#1F1F1F] text-xs font-semibold hover:text-primary transition-colors"
             >
               Sign In
             </button>
             <button
-              onClick={() => {
-                setUserTasks(["", "", ""]);
-                setIsModalOpen(true);
-              }}
+              onClick={() => router.push("/planner")}
               className="bg-primary text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:brightness-90 transition-all shadow-sm"
             >
               Start Free
@@ -321,16 +311,6 @@ export default function App() {
 
       <main className="pt-8 sm:pt-16 max-w-7xl mx-auto px-4 sm:px-6">
         
-        {/* Banner Alert for Interactive Sandbox */}
-        {/* <div className="mb-8 flex items-center justify-between gap-4 bg-secondary-container/30 px-4 py-3 rounded-xl border border-secondary-container/80 max-w-4xl mx-auto">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-primary shrink-0 animate-bounce" />
-            <p className="text-xs text-on-secondary-container font-medium">
-              <strong>ADHD Sensory Sandbox:</strong> Play with the real interactive preview below! Change goals or organize messy notepad drafts with live AI.
-            </p>
-          </div>
-        </div> */}
-
         {/* Hero Section */}
         <section className="text-center mb-16 pt-4 max-w-3xl mx-auto">
           <motion.div
@@ -347,14 +327,7 @@ export default function App() {
             
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
               <button
-                onClick={() => {
-                  setUserTasks([
-                    "Limit phone checking to 15 mins",
-                    "Do immediate deep breathing cycle",
-                    "Review active client sprint draft"
-                  ]);
-                  setIsModalOpen(true);
-                }}
+                onClick={() => router.push("/planner")}
                 className="w-full sm:w-auto bg-primary text-white hover:bg-primary-container px-8 py-3.5 rounded-xl text-sm font-semibold transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
               >
                 Start With Just 3 Things
@@ -387,17 +360,7 @@ export default function App() {
               {/* Progress Circle Ring */}
               <div className="relative w-16 h-16 shrink-0 flex items-center justify-center bg-surface-container-low rounded-full">
                 <svg className="w-full h-full transform -rotate-90">
-                  {/* Track ring */}
-                  <circle
-                    className="text-surface-container"
-                    cx="32"
-                    cy="32"
-                    fill="transparent"
-                    r="26"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  {/* Active gauge */}
+                  <circle className="text-surface-container" cx="32" cy="32" fill="transparent" r="26" stroke="currentColor" strokeWidth="4" />
                   <motion.circle
                     className="text-primary"
                     cx="32"
@@ -421,7 +384,7 @@ export default function App() {
             {/* Sandbox Notice */}
             <div className="mb-6 p-3 bg-primary/5 rounded-lg border border-primary/10 flex items-center gap-2">
               <Info className="w-4 h-4 text-primary shrink-0" />
-              <p className="text-[11px] text-on-surface-variant font-medium">
+              <p className="text-[11px] text-[#6B6B6B] font-medium">
                 Try toggling checkout states. ADHD workflows demand a dynamic progress release to fire dopamine cleanly!
               </p>
             </div>
@@ -461,7 +424,7 @@ export default function App() {
                   
                   <p
                     className={`text-xs leading-relaxed font-sans transition-all inline-block ${
-                      task.completed ? "text-on-surface-variant/40 line-through decoration-primary/45" : "text-on-surface font-medium"
+                      task.completed ? "text-[#6B6B6B] line-through decoration-primary/45" : "text-on-surface font-semibold"
                     }`}
                   >
                     {task.text}
@@ -470,12 +433,11 @@ export default function App() {
               ))}
             </div>
 
-            {/* Dynamic visual placeholder background decoration */}
             <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none"></div>
           </div>
         </section>
 
-        {/* Feature Highlights Section - "Built for ADHD brains — not against them." */}
+        {/* Feature Highlights Section */}
         <section id="features" className="max-w-7xl mx-auto py-12 bg-surface-container/30 rounded-[2rem] border border-on-surface/5 p-6 sm:p-12 mb-20 shadow-sm">
           <div className="text-center mb-12 max-w-xl mx-auto">
             <span className="text-[10px] font-bold text-primary uppercase tracking-widest bg-primary/5 px-2.5 py-1 rounded-full border border-primary/10 inline-block mb-3">
@@ -496,7 +458,7 @@ export default function App() {
               <h3 className="font-display text-lg sm:text-xl mb-3 text-on-surface font-semibold">
                 No Guilt Strategy
               </h3>
-              <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#6B6B6B] leading-relaxed">
                 Systems that forgive you when you skip a day. No harsh streaks to break, just a fresh start every time you return. Your energy is protected.
               </p>
             </div>
@@ -509,7 +471,7 @@ export default function App() {
               <h3 className="font-display text-lg sm:text-xl mb-3 text-on-surface font-semibold">
                 Prioritize Focus First
               </h3>
-              <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#6B6B6B] leading-relaxed">
                 Designed to help you restrict tasks. Pick only 3 key things and ignore the endless background noise. We hide the overflow so you locate the flow state.
               </p>
             </div>
@@ -522,7 +484,7 @@ export default function App() {
               <h3 className="font-display text-lg sm:text-xl mb-3 text-on-surface font-semibold">
                 The Externalized Brain
               </h3>
-              <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#6B6B6B] leading-relaxed">
                 Capture ideas, messages, or chores instantly. Your working memory has strict limits—save it purely for execution, not storage fatigue.
               </p>
             </div>
@@ -538,7 +500,7 @@ export default function App() {
               <h2 className="font-display text-3xl sm:text-4xl text-on-surface leading-tight font-semibold">
                 Win the day with just 3 things.
               </h2>
-              <p className="text-sm sm:text-base text-on-surface-variant font-medium leading-relaxed">
+              <p className="text-sm sm:text-base text-[#6B6B6B] font-medium leading-relaxed">
                 The biggest hurdle for neurodivergent productivity is the 'Infinite List'. By limiting your day to exactly three actionable tasks, SPACENOS enforces a gentle boundary that protects your remaining daily executive battery.
               </p>
               
@@ -556,7 +518,6 @@ export default function App() {
 
             {/* List illustration representing strict limit */}
             <div className="grid grid-cols-1 gap-4">
-              
               <div className="bg-white high-contrast-border p-5 rounded-xl flex items-center gap-4 shadow-sm opacity-60">
                 <div className="w-5 h-5 rounded-md border border-primary/20 bg-primary/20 flex items-center justify-center">
                   <Check className="w-3.5 h-3.5 text-primary" />
@@ -575,7 +536,7 @@ export default function App() {
                 <div className="w-5 h-5 rounded-md border-2 border-primary bg-white flex items-center justify-center shrink-0">
                   <div className="w-2.5 h-2.5 bg-primary/20 rounded-sm" />
                 </div>
-                <span className="text-xs sm:text-sm font-semibold text-black dark:text-black">
+                <span className="text-xs sm:text-sm font-bold text-black dark:text-black">
                   Order healthy groceries for the week ahead
                 </span>
                 <div className="ml-auto">
@@ -584,7 +545,6 @@ export default function App() {
                   </span>
                 </div>
               </div>
-
             </div>
 
           </div>
@@ -599,7 +559,7 @@ export default function App() {
             <h2 className="font-display text-2xl sm:text-3xl text-on-surface font-semibold">
               Messy brain, clean system.
             </h2>
-            <p className="text-xs sm:text-sm text-on-surface-variant max-w-lg mx-auto mt-2 leading-relaxed">
+            <p className="text-xs sm:text-sm text-[#6B6B6B] max-w-lg mx-auto mt-2 leading-relaxed">
               Pour your unorganized chaos here. Our integrated Gemini AI isolates actual tasks from background thoughts in real-time.
             </p>
           </div>
@@ -613,8 +573,6 @@ export default function App() {
                   <span className="text-[10px] font-bold text-primary uppercase tracking-widest">
                     RAW SCRATCHPAD (TYPE ANYTHING)
                   </span>
-                  
-                  {/* Indicator info */}
                   <span className="text-[9px] font-semibold text-on-surface-variant bg-surface-container py-0.5 px-2 rounded">
                     Editable Client
                   </span>
@@ -660,8 +618,7 @@ export default function App() {
                   <span className="text-[10px] font-bold text-primary uppercase tracking-widest">
                     ORGANIZED FLOW OUTPUT
                   </span>
-
-                  <span className="text-[9px] font-bold text-primary uppercase tracking-widest bg-primary/5 px-2 py-0.5 rounded border border-primary/10">
+                  <span className="text-[9px] font-bold text-primary uppercase tracking-widest bg-primary/5 px-2.5 py-0.5 rounded border border-primary/10">
                     Mode: {organizeMode === "gemini" ? "Gemini AI" : "Heuristic Parser"}
                   </span>
                 </div>
@@ -767,20 +724,17 @@ export default function App() {
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-primary shrink-0" />
-                    <span>Dynamic Bionic font conversion</span>
+                    <span>Atmospheric sensory white noise generator</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-primary shrink-0" />
-                    <span>Syllable emphasizing & Offline focus noise synth</span>
+                    <span>Minimalist visual layout styled for low cognitive strain</span>
                   </li>
                 </ul>
               </div>
 
               <button
-                onClick={() => {
-                  setUserTasks(["", "", ""]);
-                  setIsModalOpen(true);
-                }}
+                onClick={() => router.push("/planner")}
                 className="w-full bg-[#eae0b5] hover:bg-[#dcd0a0] text-[#6a6341] font-semibold text-xs py-3 rounded-xl mt-8 transition-colors"
               >
                 Launch Offline sandbox card
@@ -830,10 +784,7 @@ export default function App() {
               </div>
 
               <button
-                onClick={() => {
-                  setWorkspaceEmail("");
-                  setIsModalOpen(true);
-                }}
+                onClick={() => router.push("/planner")}
                 className="w-full bg-primary hover:brightness-110 text-white font-semibold text-xs py-3 rounded-xl mt-8 transition-all"
               >
                 Access Premium Sandbox
@@ -885,11 +836,13 @@ export default function App() {
                 </button>
                 <span className="text-on-surface-variant/30">|</span>
                 <button
-                  onClick={() => setIsModalOpen(true)}
+                  onClick={() => {
+                    router.push("/planner");
+                  }}
                   className="text-primary text-[11px] font-bold hover:underline flex items-center gap-1"
                 >
-                  Edit your 3 things
-                </button>
+                  Open your plan
+                  </button>
               </div>
             </motion.section>
           )}
@@ -913,10 +866,7 @@ export default function App() {
               
               <div className="pt-4">
                 <button
-                  onClick={() => {
-                    setUserTasks(["", "", ""]);
-                    setIsModalOpen(true);
-                  }}
+                  onClick={() => router.push("/planner")}
                   className="bg-white text-primary hover:bg-[#fcf9f5] px-10 py-4 rounded-xl text-sm font-bold transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
                 >
                   Start Free Now
@@ -930,125 +880,6 @@ export default function App() {
         </section>
 
       </main>
-
-      {/* Interactive Form/Set Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-white rounded-2xl high-contrast-border p-6 sm:p-8 max-w-md w-full shadow-2xl relative"
-          >
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-on-surface-variant hover:text-primary transition-colors focus:outline-none"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="mb-6 space-y-1">
-              <span className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-primary" /> Core Dashboard Builder
-              </span>
-              <h3 className="font-display text-xl text-on-surface font-semibold">
-                Compose Your 3 Golden Goals
-              </h3>
-              <p className="text-xs text-on-surface-variant">
-                Enter your exact targets for today below to build your personal Spacenos flow card.
-              </p>
-            </div>
-
-            <form onSubmit={saveUserSandbox} className="space-y-4">
-              <div className="space-y-3">
-                
-                {/* Inputs for targets */}
-                <div>
-                  <label className="block text-[10px] uppercase tracking-wide text-on-surface-variant font-bold mb-1">
-                    First Key Target (Focus)
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Complete presentation slide decks"
-                    className="w-full text-xs p-3 rounded-lg bg-surface-container border border-on-surface/10 focus:outline-none focus:ring-1 focus:ring-primary text-black"
-                    value={userTasks[0]}
-                    onChange={(e) => {
-                      const updated = [...userTasks];
-                      updated[0] = e.target.value;
-                      setUserTasks(updated);
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] uppercase tracking-wide text-on-surface-variant font-bold mb-1">
-                    Second Key Target
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Unsubscribe from 5 junk mailing list targets"
-                    className="w-full text-xs p-3 rounded-lg bg-surface-container border border-on-surface/10 focus:outline-none focus:ring-1 focus:ring-primary text-black"
-                    value={userTasks[1]}
-                    onChange={(e) => {
-                      const updated = [...userTasks];
-                      updated[1] = e.target.value;
-                      setUserTasks(updated);
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] uppercase tracking-wide text-on-surface-variant font-bold mb-1">
-                    Third Key Target
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Call dentist to book routine checkup"
-                    className="w-full text-xs p-3 rounded-lg bg-surface-container border border-on-surface/10 focus:outline-none focus:ring-1 focus:ring-primary text-black"
-                    value={userTasks[2]}
-                    onChange={(e) => {
-                      const updated = [...userTasks];
-                      updated[2] = e.target.value;
-                      setUserTasks(updated);
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] uppercase tracking-wide text-on-surface-variant font-bold mb-1">
-                    Your Email (Optionally sync cross-device)
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="e.g. user@spacenos.com"
-                    className="w-full text-xs p-3 rounded-lg bg-surface-container border border-on-surface/10 focus:outline-none focus:ring-1 focus:ring-primary text-black"
-                    value={workspaceEmail}
-                    onChange={(e) => setWorkspaceEmail(e.target.value)}
-                  />
-                </div>
-
-              </div>
-
-              <div className="pt-4 flex items-center justify-between gap-4">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="w-1/2 border border-outline/20 hover:bg-gray-50 text-xs py-3 rounded-xl font-medium transition-colors text-black"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="w-1/2 bg-primary hover:brightness-110 text-white font-semibold text-xs py-3 rounded-xl transition-all shadow-md"
-                >
-                  Save Workspace
-                </button>
-              </div>
-            </form>
-          </motion.div>
-        </div>
-      )}
 
       {/* Footer Block */}
       <footer className="w-full py-12 px-6 bg-surface-container-highest/30 border-t border-on-surface/10 mt-16">
@@ -1067,13 +898,13 @@ export default function App() {
             <button onClick={() => showToast("Spacenos Privacy Policy: We keep storage 100% locally bounded.")} className="text-xs text-on-surface-variant font-semibold hover:text-primary transition-all">
               Privacy
             </button>
-            <button onClick={() => showToast("Spacenos Terms: Built on mutual calm.")} className="text-xs text-on-surface-variant font-semibold hover:text-primary transition-all">
+            <button onClick={() => showToast("Spacenos Terms: Built on mutual calm.")} className="text-xs text-[#6B6B6B] font-semibold hover:text-primary transition-all">
               Terms
             </button>
-            <button onClick={() => showToast("Support active at: care@spacenos.org")} className="text-xs text-on-surface-variant font-semibold hover:text-primary transition-all">
+            <button onClick={() => showToast("Support active at: care@spacenos.org")} className="text-xs text-[#6B6B6B] font-semibold hover:text-primary transition-all">
               Support
             </button>
-            <button onClick={() => showToast("Find us on Twitter: @spacenosapp")} className="text-xs text-on-surface-variant font-semibold hover:text-primary transition-all">
+            <button onClick={() => showToast("Find us on Twitter: @spacenosapp")} className="text-xs text-[#6B6B6B] font-semibold hover:text-primary transition-all">
               Twitter
             </button>
           </div>
