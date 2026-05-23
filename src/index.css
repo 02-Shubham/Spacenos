@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;0,7..72,700;1,7..72,400&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Literata", Georgia, serif;
+  --font-sans: "Lexend", system-ui, sans-serif;
+
+  /* Custom colors from the Cognitive Calm spec */
+  --color-primary: #af2807;
+  --color-surface: #fcf9f5;
+  --color-on-surface: #1c1c1a;
+  --color-on-surface-variant: #5a413b;
+  --color-surface-container-low: #f6f3ef;
+  --color-surface-container: #f0ede9;
+  --color-surface-container-high: #eae8e4;
+  --color-surface-container-highest: #e5e2de;
+  --color-surface-container-lowest: #ffffff;
+  --color-secondary-container: #eae0b5;
+  --color-on-secondary-container: #6a6341;
+  --color-outline: #8e7069;
+  --color-outline-variant: #e2bfb6;
+}
+
+@utility dot-grid {
+  background-color: #fcf9f5;
+  background-image: radial-gradient(#1c1c1a 0.08, transparent 0.08);
+  background-size: 24px 24px;
+}
+
+body {
+  background-color: #fcf9f5;
+  color: #1c1c1a;
+  font-family: var(--font-sans);
+}
+
+.font-display {
+  font-family: var(--font-serif);
+}
+
+.font-editorial {
+  font-family: var(--font-serif);
+}
+
+.high-contrast-border {
+  border: 1px solid rgba(28, 28, 26, 0.08);
+}

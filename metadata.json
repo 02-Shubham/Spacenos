@@ -1,0 +1,6 @@
+{
+  "name": "Spacenos Landing Page",
+  "description": "A calm, ADHD-friendly marketing landing page for Spacenos featuring interactive tools, structured task planners, and real-time distraction-reducing controls.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
