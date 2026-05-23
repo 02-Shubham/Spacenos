@@ -270,13 +270,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <span className="text-[9px] mt-0.5">Notes</span>
         </Link>
 
-        <button
-          onClick={() => setMobileMenuOpen(true)}
-          className="flex flex-col items-center justify-center py-1 flex-1 text-center text-[#6B6B6B]"
+        <Link
+          href="/review"
+          className={`flex flex-col items-center justify-center py-1 flex-1 text-center transition-colors ${
+            activeTab === "review" ? "text-primary font-bold" : "text-[#6B6B6B]"
+          }`}
         >
-          <Menu className="w-5 h-5" />
-          <span className="text-[9px] mt-0.5">Menu</span>
-        </button>
+          <TrendingUp className="w-5 h-5" />
+          <span className="text-[9px] mt-0.5">Review</span>
+        </Link>
       </div>
 
       {/* Mobile Menu Slide-out Drawer */}
