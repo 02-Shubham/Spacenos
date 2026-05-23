@@ -73,6 +73,45 @@ export default function LandingPage() {
   // Loading/Notification toast states
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Animation states for "The Loop" section
+  const [typedText, setTypedText] = useState("");
+  const [triageStep, setTriageStep] = useState(0);
+  const [timerSeconds, setTimerSeconds] = useState(1500); // 25:00
+
+  const fullText = "call landlord, finish proposal, gym, eat lunch";
+
+  useEffect(() => {
+    let index = 0;
+    const interval = setInterval(() => {
+      setTypedText(fullText.slice(0, index));
+      index = (index + 1) % (fullText.length + 10);
+    }, 80);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTriageStep((s) => (s + 1) % 5);
+    }, 1800);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimerSeconds((s) => {
+        if (s <= 1470) return 1500;
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatLoopTime = (total: number) => {
+    const m = Math.floor(total / 60);
+    const s = total % 60;
+    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  };
+
   // Load initial tasks from local storage if available
   useEffect(() => {
     const saved = localStorage.getItem("spacenos_user_tasks");
@@ -230,7 +269,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="dot-grid min-h-screen text-[#1F1F1F] antialiased selection:bg-secondary-container relative pb-16">
+    <div className="dot-grid min-h-screen text-[#1F1F1F] antialiased selection:bg-secondary-container relative">
       
       {/* Toast Alert System */}
       <AnimatePresence>
@@ -437,6 +476,178 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* The Loop Section */}
+        <section id="the-loop" className="max-w-7xl mx-auto py-16 bg-[#ECE7E0]/20 rounded-[2rem] border border-[rgba(0,0,0,0.06)] p-8 sm:p-12 mb-20 relative">
+          {/* Label Tag */}
+          <div className="absolute -top-3 left-8 bg-[#F8F5F1] border border-[rgba(0,0,0,0.06)] px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider text-[#6B6B6B]">
+            Section · How It Works
+          </div>
+
+          <div className="flex flex-col mb-10">
+            <h2 className="font-display text-3xl sm:text-5xl text-black leading-tight mb-4">
+              Three steps. <br />
+              <span className="text-primary italic">That's the whole app.</span>
+            </h2>
+            <p className="text-xs sm:text-sm text-[#6B6B6B] max-w-xl font-medium leading-relaxed">
+              Most apps give you 47 buttons. We give you a loop. Run it as many times a day as your brain needs.
+            </p>
+          </div>
+
+          {/* Three steps grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            {/* Step 1 Card: Dump it */}
+            <div className="bg-[#ECE7E0]/60 border border-[rgba(0,0,0,0.03)] rounded-2xl p-6 sm:p-8 flex flex-col justify-between min-h-[260px] transition-all hover:shadow-xs">
+              <div className="space-y-1 mb-6">
+                <h3 className="text-base font-bold text-black flex items-baseline gap-1.5">
+                  <span className="text-primary font-display text-lg italic font-semibold">1</span> Dump it.
+                </h3>
+                <p className="text-[11px] text-[#6B6B6B] font-medium">Empty your mental RAM.</p>
+              </div>
+
+              <div className="bg-[#FAF8F5] text-[#8C7A6B] italic font-semibold p-4 rounded-xl text-center border border-[rgba(0,0,0,0.05)] shadow-xs w-full text-xs min-h-[4.5rem] flex items-center justify-center font-sans tracking-wide">
+                <span>
+                  "{typedText}"
+                  <span className="inline-block w-0.5 h-3.5 bg-[#8C7A6B] ml-0.5 animate-pulse" />
+                </span>
+              </div>
+            </div>
+
+            {/* Step 2 Card: Triage */}
+            <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-md border border-[rgba(0,0,0,0.04)] flex flex-col justify-between min-h-[260px] scale-[1.02] relative z-10 transition-all">
+              <div className="space-y-1 mb-6">
+                <h3 className="text-base font-bold text-black flex items-baseline gap-1.5">
+                  <span className="text-primary font-display text-lg italic font-semibold">2</span> Triage.
+                </h3>
+                <p className="text-[11px] text-[#6B6B6B] font-medium">Sort now vs later.</p>
+              </div>
+
+              <div className="bg-white rounded-xl border border-[rgba(0,0,0,0.03)] p-3 space-y-2 w-full text-[11px] font-semibold text-black">
+                <AnimatePresence mode="popLayout">
+                  {triageStep >= 1 && (
+                    <motion.div
+                      key="triage-1"
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex justify-between items-center bg-[#F8F5F1] px-2.5 py-1.5 rounded border border-[rgba(0,0,0,0.02)]"
+                    >
+                      <span>Call landlord</span>
+                      <span className="bg-[#FCEBE6] text-[#E14C2A] text-[8px] font-black uppercase px-2 py-0.5 rounded">Today</span>
+                    </motion.div>
+                  )}
+                  {triageStep >= 2 && (
+                    <motion.div
+                      key="triage-2"
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex justify-between items-center bg-[#F8F5F1] px-2.5 py-1.5 rounded border border-[rgba(0,0,0,0.02)]"
+                    >
+                      <span>Finish proposal</span>
+                      <span className="bg-[#FCEBE6] text-[#E14C2A] text-[8px] font-black uppercase px-2 py-0.5 rounded">Today</span>
+                    </motion.div>
+                  )}
+                  {triageStep >= 3 && (
+                    <motion.div
+                      key="triage-3"
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 0.6, y: 0 }}
+                      className="flex justify-between items-center bg-[#F8F5F1] px-2.5 py-1.5 rounded border border-[rgba(0,0,0,0.02)]"
+                    >
+                      <span>Gym</span>
+                      <span className="bg-slate-200/60 text-[#6B6B6B] text-[8px] font-black uppercase px-2 py-0.5 rounded">Park</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                {triageStep === 0 && (
+                  <div className="py-6 text-center text-[10px] text-[#6B6B6B] italic font-medium">
+                    Sorting incoming thoughts...
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Step 3 Card: Focus */}
+            <div className="bg-[#ECE7E0]/60 border border-[rgba(0,0,0,0.03)] rounded-2xl p-6 sm:p-8 flex flex-col justify-between min-h-[260px] transition-all hover:shadow-xs">
+              <div className="space-y-1 mb-6">
+                <h3 className="text-base font-bold text-black flex items-baseline gap-1.5">
+                  <span className="text-primary font-display text-lg italic font-semibold">3</span> Focus.
+                </h3>
+                <p className="text-[11px] text-[#6B6B6B] font-medium">One thing at a time.</p>
+              </div>
+
+              <div className="bg-[#E7ECE7] text-[#4A5D4A] rounded-xl p-4 border border-[rgba(74,93,74,0.12)] shadow-xs w-full space-y-3.5 text-center flex flex-col justify-between">
+                <div className="text-2xl font-bold font-mono tracking-wider tabular-nums select-none pt-1">
+                  {formatLoopTime(timerSeconds)}
+                </div>
+                <div className="flex justify-between items-center text-[8px] font-bold uppercase tracking-wider text-[#4A5D4A]/80 border-t border-[#4A5D4A]/10 pt-2">
+                  <span>Step 3 of 7</span>
+                  <span>Repeat until 5pm</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+
+        {/* Split Section: "Win the day with just 3 things." */}
+        <section id="built-for-adhd" className="max-w-6xl mx-auto py-12 mb-20 scroll-mt-20">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            
+            <div className="space-y-6">
+              <h2 className="font-display text-3xl sm:text-4xl text-on-surface leading-tight font-semibold">
+                Win the day with just <span className="text-primary">3 things.</span>
+              </h2>
+              <p className="text-sm sm:text-base text-[#6B6B6B] font-medium leading-relaxed">
+                The biggest hurdle for neurodivergent productivity is the 'Infinite List'. By limiting your day to exactly three actionable tasks, SPACENOS enforces a gentle boundary that protects your remaining daily executive battery.
+              </p>
+              
+              <div className="flex items-center gap-3 pt-2">
+                <div className="flex -space-x-2">
+                  <div className="w-8 h-8 rounded-full bg-primary text-white border-2 border-white flex items-center justify-center text-[10px] font-bold shadow-sm">JS</div>
+                  <div className="w-8 h-8 rounded-full bg-[#eae0b5] text-[#6a6341] border-2 border-white flex items-center justify-center text-[10px] font-bold shadow-sm">MK</div>
+                  <div className="w-8 h-8 rounded-full bg-[#e5e2de] text-on-surface-variant border-2 border-white flex items-center justify-center text-[10px] font-bold shadow-sm">+18k</div>
+                </div>
+                <span className="text-xs text-on-surface font-semibold">
+                  Finding calm momentum together worldwide.
+                </span>
+              </div>
+            </div>
+
+            {/* List illustration representing strict limit */}
+            <div className="grid grid-cols-1 gap-4">
+              <div className="bg-white high-contrast-border p-5 rounded-xl flex items-center gap-4 shadow-sm opacity-60">
+                <div className="w-5 h-5 rounded-md border border-primary/20 bg-primary/20 flex items-center justify-center">
+                  <Check className="w-3.5 h-3.5 text-primary" />
+                </div>
+                <span className="text-xs sm:text-sm text-on-surface/50 line-through">Draft sales proposal board for Monday</span>
+              </div>
+
+              <div className="bg-white high-contrast-border p-5 rounded-xl flex items-center gap-4 shadow-sm opacity-60">
+                <div className="w-5 h-5 rounded-md border border-primary/20 bg-primary/20 flex items-center justify-center">
+                  <Check className="w-3.5 h-3.5 text-primary" />
+                </div>
+                <span className="text-xs sm:text-sm text-on-surface/50 line-through">Quick HIIT home workout for raw dopamine reset</span>
+              </div>
+
+              <div className="bg-white border-2 border-primary/70 p-6 rounded-xl flex items-center gap-4 shadow-lg scale-[1.03] transition-all">
+                <div className="w-5 h-5 rounded-md border-2 border-primary bg-white flex items-center justify-center shrink-0">
+                  <div className="w-2.5 h-2.5 bg-primary/20 rounded-sm" />
+                </div>
+                <span className="text-xs sm:text-sm font-bold text-black dark:text-black">
+                  Order healthy groceries for the week ahead
+                </span>
+                <div className="ml-auto">
+                  <span className="bg-primary/10 text-primary uppercase text-[8px] tracking-widest font-bold px-2 py-0.5 rounded-full animate-pulse">
+                    IN FOCUS
+                  </span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
         {/* Feature Highlights Section */}
         <section id="features" className="max-w-7xl mx-auto py-12 bg-surface-container/30 rounded-[2rem] border border-on-surface/5 p-6 sm:p-12 mb-20 shadow-sm">
           <div className="text-center mb-12 max-w-xl mx-auto">
@@ -492,63 +703,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Split Section: "Win the day with just 3 things." */}
-        <section id="built-for-adhd" className="max-w-6xl mx-auto py-12 mb-20 scroll-mt-20">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            
-            <div className="space-y-6">
-              <h2 className="font-display text-3xl sm:text-4xl text-on-surface leading-tight font-semibold">
-                Win the day with just 3 things.
-              </h2>
-              <p className="text-sm sm:text-base text-[#6B6B6B] font-medium leading-relaxed">
-                The biggest hurdle for neurodivergent productivity is the 'Infinite List'. By limiting your day to exactly three actionable tasks, SPACENOS enforces a gentle boundary that protects your remaining daily executive battery.
-              </p>
-              
-              <div className="flex items-center gap-3 pt-2">
-                <div className="flex -space-x-2">
-                  <div className="w-8 h-8 rounded-full bg-primary text-white border-2 border-white flex items-center justify-center text-[10px] font-bold shadow-sm">JS</div>
-                  <div className="w-8 h-8 rounded-full bg-[#eae0b5] text-[#6a6341] border-2 border-white flex items-center justify-center text-[10px] font-bold shadow-sm">MK</div>
-                  <div className="w-8 h-8 rounded-full bg-[#e5e2de] text-on-surface-variant border-2 border-white flex items-center justify-center text-[10px] font-bold shadow-sm">+18k</div>
-                </div>
-                <span className="text-xs text-on-surface font-semibold">
-                  Finding calm momentum together worldwide.
-                </span>
-              </div>
-            </div>
-
-            {/* List illustration representing strict limit */}
-            <div className="grid grid-cols-1 gap-4">
-              <div className="bg-white high-contrast-border p-5 rounded-xl flex items-center gap-4 shadow-sm opacity-60">
-                <div className="w-5 h-5 rounded-md border border-primary/20 bg-primary/20 flex items-center justify-center">
-                  <Check className="w-3.5 h-3.5 text-primary" />
-                </div>
-                <span className="text-xs sm:text-sm text-on-surface/50 line-through">Draft sales proposal board for Monday</span>
-              </div>
-
-              <div className="bg-white high-contrast-border p-5 rounded-xl flex items-center gap-4 shadow-sm opacity-60">
-                <div className="w-5 h-5 rounded-md border border-primary/20 bg-primary/20 flex items-center justify-center">
-                  <Check className="w-3.5 h-3.5 text-primary" />
-                </div>
-                <span className="text-xs sm:text-sm text-on-surface/50 line-through">Quick HIIT home workout for raw dopamine reset</span>
-              </div>
-
-              <div className="bg-white border-2 border-primary/70 p-6 rounded-xl flex items-center gap-4 shadow-lg scale-[1.03] transition-all">
-                <div className="w-5 h-5 rounded-md border-2 border-primary bg-white flex items-center justify-center shrink-0">
-                  <div className="w-2.5 h-2.5 bg-primary/20 rounded-sm" />
-                </div>
-                <span className="text-xs sm:text-sm font-bold text-black dark:text-black">
-                  Order healthy groceries for the week ahead
-                </span>
-                <div className="ml-auto">
-                  <span className="bg-primary/10 text-primary uppercase text-[8px] tracking-widest font-bold px-2 py-0.5 rounded-full animate-pulse">
-                    IN FOCUS
-                  </span>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </section>
+        
 
         {/* Capture Scratchpad interactive transformer */}
         <section id="scratchpad" className="max-w-5xl mx-auto mb-20 scroll-mt-20">

@@ -22,9 +22,9 @@
   --color-outline-variant: rgba(0,0,0,0.03);
 }
 
-@utility dot-grid {
+.dot-grid {
   background-color: #F8F5F1;
-  background-image: radial-gradient(rgba(31, 31, 31, 0.06) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(31, 31, 31, 0.12) 1.5px, transparent 1.5px);
   background-size: 24px 24px;
 }
 
